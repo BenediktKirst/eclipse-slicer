@@ -21,6 +21,11 @@ import de.hu_berlin.slice.plugin.eclipse.classpath.ClasspathScope;
 import de.hu_berlin.slice.plugin.eclipse.classpath.LibraryClasspathResolver;
 import de.hu_berlin.slice.plugin.eclipse.classpath.SourceClasspathResolver;
 
+/**
+ * Utility to create an AnalysisScope, which specifies the application and library code that will be analyzed.
+ */
+
+
 @Singleton
 
 /**
@@ -38,16 +43,23 @@ public class AnalysisScopeFactory {
     public final static String SYNTHETIC_J2SE_MODEL = "dat/SyntheticJ2SEModel.txt";
 
     /**
-     * uses WALA Library to create the analysis scope
-     * 
+
+     * Creates an AnalysisScope.
+     * @param javaProject
+     * current java project
+     * @param exclusionsFile
+     * XML-based file, which tells WALA to ignore certain classes or packages
+     * @return analysisScope
+     * which specifies the application and library code to be analyzed.
+     * @throws Exception
      */
     public AnalysisScope create(IJavaProject javaProject, File exclusionsFile) throws Exception {
-
-    	//initialize analysisScope
-        AnalysisScope analysisScope = AnalysisScopeReader.readJavaScope(SYNTHETIC_J2SE_MODEL, exclusionsFile, this.getClass().getClassLoader());
-
+    	
+    		AnalysisScope analysisScope = AnalysisScopeReader.readJavaScope(SYNTHETIC_J2SE_MODEL, exclusionsFile, this.getClass().getClassLoader());
+        
         //Maps each module to either Application, Extension, Primordial or Source and adds it to the AnalysisScope
-        Map<ClasspathLoader, List<Module>> modules = getModules(javaProject);
+    		Map<ClasspathLoader, List<Module>> modules = getModules(javaProject);
+
         for (ClasspathLoader classpathLoader : modules.keySet()) {
             for (Module module : modules.get(classpathLoader)) {
             	//adds each module to the analysis scope
@@ -57,19 +69,28 @@ public class AnalysisScopeFactory {
 
         return analysisScope;
     }
-
+    
+    /**
+     * Creates a hash map of the classpath entries.
+     * @param javaProject
+     * current java project
+     * @return Hash map mapping the classpath entries either to Application, Source, Primordial or Extension
+     * @throws Exception
+     */
     public Map<ClasspathLoader, List<Module>> getModules(IJavaProject javaProject) throws Exception {
 
         IClasspathEntry[] classPathEntries = javaProject.getResolvedClasspath(true);
 
         ClasspathScope classpathScope = new ClasspathScope(javaProject);
         classpathScope.setIncludeSource(false); // TODO: This must be made available as a UI option
-
+        
+        
         Map<ClasspathLoader, List<Module>> modules = new HashMap<>();
         for (ClasspathLoader classpathLoader : ClasspathLoader.values()) {
             modules.put(classpathLoader, new ArrayList<>());
         }
-
+        
+        
         for (IClasspathEntry classpathEntry : classPathEntries) {
 
             Map.Entry<ClasspathLoader, Module> moduleEntry;
@@ -84,7 +105,8 @@ public class AnalysisScopeFactory {
                 default:
                     throw new Exception();
             }
-
+            
+            //maps the module tree directory to the corresponding ClasspathLoaderRefrence
             if (null != moduleEntry) {
                 modules.get(moduleEntry.getKey()).add(moduleEntry.getValue());
             }

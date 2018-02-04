@@ -13,28 +13,44 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-/*
- * The Highlighting class contains the methods for highlight different parts of the source code in the Editor,
- * for example random or selected text
+
+/**
+ * Class determines which lines should be highlighted.
  */
+
 public class Highlighting {
 
-	//Highlights whatever you marked
+	/**
+	 * Highlights the given Section of the marked text.
+	 * @param textSelection 
+	 * the selected text in the editor
+	 * @throws CoreException
+	 */
+	IFile file;
+	
+	public Highlighting() {
+		
+		 file = (IFile) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor()
+					.getEditorInput().getAdapter(IFile.class);
+	}
+	
 	public void HighlightSelected(ITextSelection textSelection) throws CoreException {
-
-		IFile file = (IFile) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor()
-				.getEditorInput().getAdapter(IFile.class);
 
 		int offset = textSelection.getOffset();
 		int length = textSelection.getLength();
 		MarkerFactory.createMarker(file, offset, length);
 	}
 	
-	//Hightlights a Line according to a given line number
+
+	/**
+	 * Highlights a Line according to a given line number.
+	 * @param linenumber
+	 * line number from the editor
+	 * @throws CoreException
+	 * @throws BadLocationException
+	 */
 	public void HighlightLine(int linenumber) throws CoreException, BadLocationException {
 
-		IFile file = (IFile) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor()
-				.getEditorInput().getAdapter(IFile.class);
 		
 		IDocumentProvider provider = new TextFileDocumentProvider();
 		provider.connect(file);
@@ -46,11 +62,15 @@ public class Highlighting {
 		MarkerFactory.createMarker(file, offset, length);
 	}
 	
-	//Highlights any random line numbers
+  
+	/**
+	 * Highlights random lines in the Editor.
+	 * @throws CoreException
+	 * @throws BadLocationException
+	 */
 	public void HighlightRandomLines() throws CoreException, BadLocationException {
 
-		IFile file = (IFile) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor()
-				.getEditorInput().getAdapter(IFile.class);
+		
 		
 		IDocumentProvider provider = new TextFileDocumentProvider();
 		provider.connect(file);
@@ -66,13 +86,15 @@ public class Highlighting {
     		HighlightLine(colrThisLine);
 		}
 	}
-
-	//Deletes all the highlights and markers linked directly to the resource
+	
+	
+	/**
+	 * Deletes all the highlights and markers linked directly to the resource.
+	 * @throws CoreException
+	 */
 	public void deleteMarkers() throws CoreException {
 		
-		IFile file = (IFile) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor()
-				.getEditorInput().getAdapter(IFile.class);
-
+		
 		List<IMarker> markers = MarkerFactory.findMarkers(file);
 		for (IMarker marker : markers) {
 			marker.delete();

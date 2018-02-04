@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
+ * Task to Compile the Project.
  * @author IShowerNaked
  * Task to compile the current project
  * Throws TaskException if it can't build the project
